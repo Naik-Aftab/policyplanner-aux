@@ -33,4 +33,8 @@ private baseUrl = environment.apiUrl;
 
   }
 
+   saveHealthProposal(payload: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/proposals/save`, payload);
+  }
+
 }
