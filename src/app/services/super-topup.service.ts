@@ -2,15 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { forkJoin, of, Observable, throwError } from 'rxjs';
 import { catchError, timeout } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SuperTopupService {
 
-  // private baseUrl = 'http://localhost:1202';  // your backend base URL
-private baseUrl = 'https://policyplanner.com/health-insurance/';
-
+private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

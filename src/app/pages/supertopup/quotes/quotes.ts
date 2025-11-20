@@ -28,6 +28,17 @@ export class Quotes implements OnInit {
   results: any[] = [];
   age: number | null = null;
   pincode = '';
+  name = '';
+
+  deductibleList = signal<number[]>([]);
+  selectedDeductible: number | null = null;
+
+  insurerList = signal<string[]>([]);
+  selectedInsurer: string | null = null;
+
+  selectedSort: string | null = null;
+
+
 
   selectedCoverageAmt: number | null = null;
   basePayload: PlanPayload | null = null;
@@ -72,8 +83,12 @@ export class Quotes implements OnInit {
       try {
         const parsed = JSON.parse(savedData);
         const payload = this.buildPayloadFromLocal(parsed);
+        this.basePayload = payload;
+
         this.age = payload.age ?? null;
-        this.pincode = parsed.cust_Pincode ?? '';
+        this.pincode = parsed.details.pincode ?? '';
+        this.name = parsed.details.firstName ?? '';
+
         this.fetchAllPlans(payload);
         return;
       } catch (e) {
@@ -112,38 +127,48 @@ export class Quotes implements OnInit {
   // }
 
   private buildPayloadFromLocal(ls: any): PlanPayload {
-  const enquiry = ls?.details ?? [];
-  const members = ls?.members ?? [];
+    const enquiry = ls?.details ?? [];
+    const members = ls?.members ?? [];
 
-  // Extract YOU (primary) age
-  const you = members.find((m: any) => m.id === 'you');
-  const spouse = members.find((m: any) => m.id === 'spouse');
+    // Extract YOU (primary) age
+    const you = members.find((m: any) => m.id === 'you');
+    const spouse = members.find((m: any) => m.id === 'spouse');
 
-  // Collect child ages (sons + daughters)
-  const childAges: Array<number | null> = [];
+    // Collect child ages (sons + daughters)
+    const childAges: Array<number | null> = [];
 
-  members.forEach((m: any) => {
-    if (m.id.startsWith("son") || m.id.startsWith("daughter")) {
-      childAges.push(this.numOrNull(m.age));
-    }
-  });
+    members.forEach((m: any) => {
+      if (m.id.startsWith("son") || m.id.startsWith("daughter")) {
+        childAges.push(this.numOrNull(m.age));
+      }
+    });
 
-  // pad or trim to exactly 4 entries
-  while (childAges.length < 4) childAges.push(null);
-  if (childAges.length > 4) childAges.length = 4;
+    // pad or trim to exactly 4 entries
+    while (childAges.length < 4) childAges.push(null);
+    if (childAges.length > 4) childAges.length = 4;
 
-  return {
-    coverAmount: this.toNum(enquiry.coverAmount, 0),
+    return {
+      coverAmount: this.toNum(enquiry.coverAmount, 0),
 
-    age: this.toNum(you?.age, 0),      // YOU age
-    sage: this.numOrNull(spouse?.age), // Spouse age or null
+      age: this.toNum(you?.age, 0),      // YOU age
+      sage: this.numOrNull(spouse?.age), // Spouse age or null
 
-    c1age: childAges[0],
-    c2age: childAges[1],
-    c3age: childAges[2],
-    c4age: childAges[3],
-  };
-}
+      c1age: childAges[0],
+      c2age: childAges[1],
+      c3age: childAges[2],
+      c4age: childAges[3],
+    };
+  }
+
+  onCoverageAmountChange(event: any) {
+    const newValue = Number(event.target.value);
+
+    if (!this.basePayload) return;
+
+    this.basePayload.coverAmount = isNaN(newValue) ? 0 : newValue;
+
+    this.fetchAllPlans(this.basePayload);
+  }
 
 
   fetchAllPlans(payload: any) {
@@ -153,25 +178,96 @@ export class Quotes implements OnInit {
 
         this.api.callAllPremiumApis(apiList, payload).subscribe({
           next: (resArray) => {
-            const validResults = resArray.filter((res: any) => res && res.planName);
 
-            this.plans.set(
-              validResults.flatMap((p: any) =>
-                p.premiums?.map((pm: any) => ({
+
+            // -----------------------------------
+            // 1️⃣ Extract insurer names
+            // -----------------------------------
+            const insurerNames: string[] = [];
+
+            resArray.forEach((res: any) => {
+              if (res?.companyName) {
+                insurerNames.push(res.companyName.trim());
+              }
+            });
+
+            // Unique + sorted
+            const uniqueInsurers = Array.from(new Set(insurerNames)).sort();
+
+            // Update signal
+            this.insurerList.set(uniqueInsurers);
+
+
+            // ------------------------
+            // 1️⃣ Extract all deductibles
+            // ------------------------
+            const allDeductibles: number[] = [];
+
+            resArray.forEach((res: any) => {
+              if (res?.premiums) {
+                res.premiums.forEach((pm: any) => {
+                  const d = Number(pm.deductible);
+                  if (!isNaN(d)) allDeductibles.push(d);
+                });
+              }
+            });
+
+            // Unique + sorted
+            const uniqueSorted = Array.from(new Set(allDeductibles)).sort((a, b) => a - b);
+
+            // Set dropdown values
+            this.deductibleList.set(uniqueSorted);
+
+
+
+            // 2️⃣ Filter and Map Plans
+            const mappedPlans = resArray
+              .filter((res: any) => res && res.planName)
+              .flatMap((p: any) => {
+                let premiums = p.premiums || [];
+
+                // Apply deductible filter
+                if (this.selectedDeductible !== null) {
+                  premiums = premiums.filter((pm: any) =>
+                    Number(pm.deductible) === this.selectedDeductible
+                  );
+                }
+
+                // Apply insurer filter
+                if (this.selectedInsurer !== null) {
+                  if (p.companyName !== this.selectedInsurer) return [];
+                }
+
+
+                return premiums.map((pm: any) => ({
                   logo: `assets/quote/${p.logoUrl}`,
                   name: p.planName,
                   tag: p.companyName,
                   cover: `₹ ${this.formatIndianCurrency(p.coverAmount)}`,
                   deductible: `₹ ${this.formatIndianCurrency(Number(pm.deductible))}`,
                   price: `₹ ${this.formatIndianCurrency(pm.premium)}`,
-                  features: p.features?.length ? p.features : ["No Key Features Available"]
-                })) || []
-              )
-            );
+                  features: p.features?.length ? p.features : ["No Key Features Available"],
+                  brochure: pm.brochureUrl || p.brochureUrl || null,
+                }));
+              });
 
-            console.log("Plans count:", this.plans.length);
+            // -----------------------------------
+            // 3️⃣ Apply Sorting
+            // -----------------------------------
+            if (this.selectedSort === "low") {
+              mappedPlans.sort((a: any, b: any) =>
+                Number(a.price.replace(/\D/g, "")) - Number(b.price.replace(/\D/g, ""))
+              );
+            }
 
-            console.log("Mapped Plans:", this.plans);
+            if (this.selectedSort === "high") {
+              mappedPlans.sort((a: any, b: any) =>
+                Number(b.price.replace(/\D/g, "")) - Number(a.price.replace(/\D/g, ""))
+              );
+            }
+
+
+            this.plans.set(mappedPlans);
           },
           error: (err) => {
             console.error('Error calling premium APIs:', err);
@@ -182,6 +278,51 @@ export class Quotes implements OnInit {
         console.error('Error fetching endpoints:', err);
       }
     });
+  }
+
+  onSortChange(event: any) {
+    const value = event.target.value;
+
+    if (value === "") {
+      this.selectedSort = null;
+    } else {
+      this.selectedSort = value; // "low" or "high"
+    }
+
+    if (this.basePayload) {
+      // Re-apply filters + sorting
+      this.fetchAllPlans(this.basePayload);
+    }
+  }
+
+
+  onInsurerChange(event: any) {
+    const value = event.target.value;
+
+    this.selectedInsurer = value === "" ? null : value;
+
+    if (this.basePayload) {
+      this.fetchAllPlans(this.basePayload);
+    }
+  }
+
+
+  onDeductibleChange(event: any) {
+    const value = event.target.value;
+
+    // If empty, remove filter
+    if (value === "") {
+      this.selectedDeductible = null;
+    } else {
+      this.selectedDeductible = Number(value);
+    }
+
+    if (this.basePayload) {
+      // Optional: API only if required
+      (this.basePayload as any).deductibleAmount = this.selectedDeductible ?? null;
+
+      this.fetchAllPlans(this.basePayload);
+    }
   }
 
 
@@ -206,6 +347,9 @@ export class Quotes implements OnInit {
     }
   }
 
+  downloadBrochure(url: string) {
+    window.open(url, '_blank');
+  }
 
   goToProposal(plan: any) {
     console.log("plan",plan);
