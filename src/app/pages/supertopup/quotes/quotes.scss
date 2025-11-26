@@ -74,3 +74,145 @@
 #compareWrapper.export-pdf .cmp-user-strip {
   padding: 4px 12px !important;
 }
+/* ==========================================================
+   FULL MOBILE RESPONSIVENESS FOR COMPARISON TABLE
+   EXACTLY LIKE HEALTH INSURANCE VERSION
+   WITHOUT TOUCHING DESKTOP VIEW
+=========================================================== */
+@media (max-width: 768px) {
+
+  /* FULL SCREEN WRAPPER */
+  #compareWrapper {
+    padding-bottom: 70px;
+  }
+
+  /* TABLE SCROLL */
+  .cmp-table-wrapper {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    white-space: nowrap !important;
+  }
+
+  /* GRID turns into horizontally scrollable cards */
+  .cmp-top {
+    display: inline-flex !important;
+    width: auto !important;
+    min-width: 100% !important;
+  }
+
+  /* LEFT FEATURES COLUMN → FIXED LEFT */
+  .cmp-features-col {
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    min-width: 160px !important;
+    background: #f1f7fb;
+    border-right: 1px solid #dce3eb;
+  }
+
+  /* PLAN COLUMNS BECOME CARDS */
+  .cmp-plan-col {
+    min-width: 260px !important;
+    max-width: 260px !important;
+    flex-shrink: 0 !important;
+    border-right: 1px solid #eaeaea;
+    background: white;
+    padding: 12px !important;
+  }
+
+  .cmp-company-logo {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .cmp-company-name {
+    font-size: 14px !important;
+    line-height: 1.2;
+  }
+
+  .cmp-product-name {
+    font-size: 12px !important;
+  }
+
+  /* BUY NOW BUTTON */
+  .cmp-buy-now-btn {
+    font-size: 12px !important;
+    padding: 8px 10px !important;
+    min-height: 32px !important;
+    width: 100%;
+  }
+
+  /* BODY ROWS ALSO SLIDE HORIZONTALLY */
+  .cmp-row {
+    display: inline-flex !important;
+    width: auto !important;
+    min-width: 100% !important;
+  }
+
+  .cmp-feature-col {
+    position: sticky;
+    left: 0;
+    min-width: 160px !important;
+    max-width: 160px !important;
+    background: #f8fafc;
+    z-index: 10;
+    border-right: 1px solid #ddd;
+  }
+
+  .cmp-data-col {
+    min-width: 260px !important;
+    max-width: 260px !important;
+    flex-shrink: 0 !important;
+    text-align: center;
+    padding: 12px !important;
+  }
+
+  /* HEART IMAGE SMALLER */
+  .cmp-heart-icon {
+    width: 70px !important;
+    height: 70px !important;
+  }
+
+  /* HEADER TEXT */
+  .cmp-features-title {
+    font-size: 12px !important;
+  }
+
+  /* BACK BUTTON + HEADER */
+  .cmp-screen__header {
+    padding: 10px !important;
+    font-size: 14px !important;
+  }
+
+  /* FIX COMPARE BAR ON MOBILE */
+  .compare-bar,
+  .fixed.bottom-0 {
+    padding: 10px !important;
+  }
+
+  .compare-inner {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .chips {
+    overflow-x: scroll;
+    white-space: nowrap;
+    padding-bottom: 6px;
+  }
+
+  .chip {
+    min-width: 180px !important;
+  }
+
+  .actions {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+  }
+
+  .actions .btn {
+    flex: 1;
+    font-size: 14px;
+  }
+}

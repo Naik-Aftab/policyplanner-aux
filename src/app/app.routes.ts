@@ -2,14 +2,16 @@ import { Routes } from '@angular/router';
 import { Home } from './pages/home/home';
 import { EnquiryForm } from './pages/supertopup/enquiry-form/enquiry-form';
 import { ProposalForm } from './pages/supertopup/proposal-form/proposal-form';
+import { AllFeatures } from './pages/supertopup/all-features/all-features';
 import { Quotes } from './pages/supertopup/quotes/quotes';
-import { NotFound } from './pages/not-found/not-found'; 
+import { NotFound } from './pages/not-found/not-found';
 
 export const routes: Routes = [
   {
     path: 'supertopup',
     children: [
       { path: 'enquiry-form', component: EnquiryForm },
+      { path: 'all-features', component: AllFeatures},
       { path: 'quotes', component: Quotes },
       { path: '', redirectTo: 'enquiry-form', pathMatch: 'full' },
       { path: 'proposal-form', component: ProposalForm }

@@ -261,35 +261,31 @@ buildPlanKey(plan: any): string {
                 return premiums.map((pm: any) => {
                   const premiumNum = Number(pm.premium) || 0;
                   const dedNum = Number(pm.deductible) || 0;
+              return {
+                uniqueId: crypto.randomUUID(),
+                // UI fields
+                logo: `assets/quote/${p.logoUrl}`,
+                name: p.planName,
+                tag: p.companyName,
+                cover: `₹ ${this.formatIndianCurrency(coverAmountNum)}`,
+                deductible: `₹ ${this.formatIndianCurrency(dedNum)}`,
+                price: `₹ ${this.formatIndianCurrency(premiumNum)}`,
+                features: p.features?.length ? p.features : ['No Key Features Available'],
+                brochure: pm.brochureUrl || p.brochureUrl || null,
 
-                  return {
-                    uniqueId: crypto.randomUUID(),
+                // Compare
+                planId: pm.planId || p.planId || `${p.planName}-${dedNum}-${premiumNum}`,
+                coverAmountNumber: coverAmountNum,
+                deductibleNumber: dedNum,
+                priceNumber: premiumNum,
+                insurerName: p.companyName,
+                otherDetails: this.buildOtherDetails(p, pm),
 
-                    // UI fields
-                    logo: `assets/quote/${p.logoUrl}`,
-                    name: p.planName,
-                    tag: p.companyName,
-                    cover: `₹ ${this.formatIndianCurrency(coverAmountNum)}`,
-                    deductible: `₹ ${this.formatIndianCurrency(dedNum)}`,
-                    price: `₹ ${this.formatIndianCurrency(premiumNum)}`,
-                    features: p.features?.length
-                      ? p.features
-                      : ['No Key Features Available'],
-                    brochure: pm.brochureUrl || p.brochureUrl || null,
+                // IMPORTANT FOR FEATURES PAGE
+                fullPlan: p,        // <-- ADD THIS
+                fullPremium: pm,    // <-- ADD THIS
+              };
 
-                    // Compare needs – keep numeric/raw
-                    planId:
-                    pm.planId ||
-                    p.planId ||
-                   `${p.planName}-${dedNum}-${premiumNum}`,
-                    coverAmountNumber: coverAmountNum,
-                    deductibleNumber: dedNum,
-                    priceNumber: premiumNum,
-                    insurerName: p.companyName,
-                    otherDetails: this.buildOtherDetails(p, pm),
-                    rawPlan: p,
-                    rawPremium: pm,
-                  };
                 });
               });
 
@@ -471,9 +467,28 @@ isSelected(plan: any): boolean {
     }
   }
 
-  downloadBrochure(url: string) {
-    window.open(url, '_blank');
-  }
+  // downloadBrochure(url: string) {
+  //   window.open(url, '_blank');
+  // }
+goToAllFeatures(plan: any) {
+  const combined = {
+    ...plan.fullPlan,
+    premiums: [plan.fullPremium],
+
+    totalBasePremium: Number(plan.fullPremium.premium) || 0,
+    totalDiscount: Number(plan.fullPremium.discount) || 0,
+    totalPayablePremium: Number(plan.fullPremium.premium) || 0,
+
+    deductible: plan.fullPremium.deductible,
+    deductibleAmount: plan.fullPremium.deductible,
+    coverAmount: plan.fullPlan.coverAmount,
+  };
+
+  this.router.navigate(['supertopup/all-features'], {
+    state: { selectedPlan: combined }
+  });
+}
+
 
   goToProposal(plan: any) {
     this.router.navigate(['supertopup/proposal-form'], {
