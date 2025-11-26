@@ -229,16 +229,40 @@
       <div class="tw-row-4">
 
         <!-- Sum Insured -->
-        <div class="tw-field">
-          <label>Sum Insured <span class="text-red-600">*</span></label>
-          <select class="tw-input bg-gray-100" [(ngModel)]="proposalData.sumInsured" readonly>
-            <option value="">Select Sum</option>
-            <option value="200000">₹2 Lakh</option>
-            <option value="300000">₹3 Lakh</option>
-            <option value="500000">₹5 Lakh</option>
-            <option value="1000000">₹10 Lakh</option>
-          </select>
-        </div>
+     
+<div class="tw-field">
+  <label>
+    Sum Insured
+    <!-- 🔹 show dynamic amount from localStorage -->
+    <span *ngIf="proposalData.sumInsured" class="ml-1 font-semibold">
+      (₹ {{ proposalData.sumInsured | number }})
+    </span>
+    <span class="text-red-600">*</span>
+  </label>
+
+  <select class="tw-input bg-gray-100"
+          [(ngModel)]="proposalData.sumInsured"
+          readonly>
+    <option value="">Select Sum</option>
+    <option value="200000">₹2 Lakh</option>
+    <option value="300000">₹3 Lakh</option>
+    <option value="500000">₹5 Lakh</option>
+    <option value="600000">₹6 Lakh</option>
+    <option value="700000">₹7 Lakh</option>
+    <option value="800000">₹8 Lakh</option>
+    <option value="1000000">₹10 Lakh</option>
+    <option value="1100000">₹11 Lakh</option>
+    <option value="1200000">₹12 Lakh</option>
+    <option value="1500000">₹15 Lakh</option>
+    <option value="1600000">₹16 Lakh</option>
+    <option value="2000000">₹20 Lakh</option>
+    <option value="2500000">₹25 Lakh</option>
+    <option value="5000000">₹50 Lakh</option>
+    <option value="10000000">₹1 Crore</option>
+    <option value="30000000">₹3 Crore</option>
+  </select>
+</div>
+
 
         <div></div><div></div><div></div>
 

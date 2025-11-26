@@ -618,7 +618,7 @@ selectNone(member: any, event?: MouseEvent) {
   nextStep() {
     if (this.currentStep === 1) {
       if (!this.validateStep1()) {
-        this.showValidationAlert('Please fix all errors in Step 1 before proceeding.');
+        this.showValidationAlert('Please fill all the details correctly before proceeding.');
         return;
       }
     } else if (this.currentStep === 2) {

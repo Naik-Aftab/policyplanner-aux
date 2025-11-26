@@ -7,6 +7,18 @@
   border-image: linear-gradient(180deg, #FF5500 30.9%, #006D8D 100%) 1;
   border-radius: 0.75rem; /* ~16px */
 }
+.point-tick {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  max-width: 20px !important;
+  max-height: 20px !important;
+  flex-shrink: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
 
 /* Shadow used in Figma */
